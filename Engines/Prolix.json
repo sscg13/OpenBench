@@ -1,6 +1,6 @@
 {
   "private": false,
-  "nps": 850000,
+  "nps": 4000000,
   "source": "https://github.com/sscg13/sscg13-chess-engine",
 
   "build": {
