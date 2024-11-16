@@ -28,6 +28,7 @@
 
     "engines" : [
       "Prolix",
-      "Stormphranj"
+      "Stormphranj",
+      "Tilted"
     ]
 }
