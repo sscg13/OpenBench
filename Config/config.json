@@ -26,9 +26,10 @@
         "shatranj_unbalanced2.epd"
     ],
 
-    "engines" : [
-      "Prolix",
-      "Stormphranj",
-      "Tilted"
-    ]
+  "engines": [
+    "Frolic",
+    "Prolix",
+    "Stormphranj",
+    "Tilted"
+  ]
 }

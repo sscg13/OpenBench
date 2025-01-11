@@ -1,7 +1,7 @@
 {
   "private": false,
   "nps": 3000000,
-  "source": "https://github.com/sscg13/sscg13-chess-engine",
+  "source": "https://github.com/sscg13/Prolix",
 
   "build": {
     "path": "",
@@ -13,7 +13,7 @@
   "test_presets": {
 
     "default": {
-      "base_branch": "shatranj",
+      "base_branch": "main",
       "book_name": "shatranj_unbalanced2.epd",
       "test_bounds": "[0.00, 5.00]",
       "test_confidence": "[0.05, 0.05]",
