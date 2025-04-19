@@ -390,7 +390,6 @@ class Cutechess:
         book_name = config.workload['test']['book']['name'].upper()
         is_shatranj = 'SHATRANJ' in book_name
         is_frc    = 'FRC' in book_name or '960' in book_name or 'FISCHER' in book_name
-        variant   = ['standard', 'fischerandom'][is_frc]
         variant   = [['standard', 'fischerandom'], ['shatranj', 'shatranj']][is_shatranj][is_frc]
 
         # Only include -repeat if not skipping the reverses in DATAGEN
