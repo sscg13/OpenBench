@@ -7,7 +7,7 @@
       "path": "",
       "compilers": [ "clang++" ],
       "cpuflags": [ "POPCNT" ],
-      "systems": [ "Windows" ]
+      "systems": [ "Windows", "Linux" ]
     },
   
     "test_presets": {
