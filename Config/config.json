@@ -24,7 +24,8 @@
         "shatranj_balanced.epd",
         "shatranj_dfrs.epd",
         "shatranj_unbalanced.epd",
-        "shatranj_unbalanced2.epd"
+        "shatranj_unbalanced2.epd",
+        "shatranj_unbalanced3.epd"
     ],
 
     "engines" : [
