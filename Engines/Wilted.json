@@ -7,7 +7,7 @@
       "path": "",
       "compilers": [ "clang++", "g++" ],
       "cpuflags": [ "POPCNT", "BMI2" ],
-      "systems": [ "Windows" ]
+      "systems": [ "Windows", "Linux" ]
     },
   
     "test_presets": {
