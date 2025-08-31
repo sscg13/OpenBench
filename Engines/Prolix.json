@@ -1,6 +1,6 @@
 {
     "private": false,
-    "nps": 2200000,
+    "nps": 2000000,
     "source": "https://github.com/sscg13/Prolix",
   
     "build": {
