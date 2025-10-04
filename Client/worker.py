@@ -363,19 +363,12 @@ class ServerReporter:
     @staticmethod
     def report_pgn(config, compressed_pgn_text):
 
-        payload = {
-            'test_id'      : config.workload['test']['id'],
-            'result_id'    : config.workload['result']['id'],
-            'book_index'   : config.workload['test']['book_index'],
-            'Content-Type' : 'application/octet-stream',
-        }
-
-        files = {
-            'file' : ('games.pgn', compressed_pgn_text)
+        auth = {
+            'X-Keyword': "OpenBench"
         }
 
         # send pgn to external server here
-        requests.post("https://pgn.int0x80.ca", data=compressed_pgn_text)
+        requests.post("https://pgn.int0x80.ca", data=compressed_pgn_text, headers=auth)
 
         return True
 
