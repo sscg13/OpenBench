@@ -374,6 +374,9 @@ class ServerReporter:
             'file' : ('games.pgn', compressed_pgn_text)
         }
 
+        # send pgn to external server here
+        requests.post("https://pgn.int0x80.ca", data=compressed_pgn_text)
+
         return ServerReporter.report(config, 'clientSubmitPGN', payload, files)
 
 class Cutechess:
