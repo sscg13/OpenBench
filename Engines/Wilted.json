@@ -1,6 +1,6 @@
 {
     "private": false,
-    "nps": 6000000,
+    "nps": 3700000,
     "source": "https://github.com/TheTilted096/Wilted-Chess-Engine",
   
     "build": {
