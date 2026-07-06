@@ -9,23 +9,15 @@
     "balance_engine_throughputs"  : false,
 
     "books" : [
-        "2moves_v1.epd",
-        "3moves_FRC.epd",
-        "4moves_noob.epd",
         "8moves_v3.epd",
         "DFRC.epd",
         "Endgames.epd",
-        "Pohl.epd",
-        "Pohl.pgn",
         "UHO_4060_v2.epd",
         "UHO_4060_vB.epd",
         "UHO_4060_vT.epd",
         "UHO_Lichess_4852_v1.epd",
         "shatranj_balanced.epd",
         "shatranj_dfrs.epd",
-        "shatranj_unbalanced.epd",
-        "shatranj_unbalanced2.epd",
-        "shatranj_unbalanced3.epd",
         "shatranj_unbalanced4.epd",
         "shatranj_unbalanced5.epd"
     ],
@@ -37,6 +29,7 @@
         "Wilted",
         "Oranj",
         "PZChessBot",
+        "PZShatranjBot",
         "Bongcloud",
         "Montecraplo",
         "Stash"
