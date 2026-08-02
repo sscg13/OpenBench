@@ -24,6 +24,7 @@
             <tr><td class="td-label">{{dev_text}} Bench</td><td>{{workload.dev.bench}}</td></tr>
             <tr><td class="td-label">{{dev_text}} Network</td><td><a href="{{workload|network_download_link:'dev'}}">{{workload.dev_netname}}</td></tr>
             <tr><td class="td-label">{{dev_text}} Options</td><td class="engine-options">{{workload.dev_options}}</td></tr>
+            <tr><td class="td-label">{{dev_text}} Protocol</td><td>{{workload.dev_protocol}}</td></tr>
             <tr><td class="td-label">{{dev_text}} Time</td><td>{{workload.dev_time_control}}</td></tr>
 
             <!-- All of the Base Engine information, which only exists for TESTs -->
@@ -34,6 +35,7 @@
                 <tr><td class="td-label">Base Bench</td><td>{{workload.base.bench}}</td></tr>
                 <tr><td class="td-label">Base Network</td><td><a href="{{workload|network_download_link:'base'}}">{{workload.base_netname}}</td></tr>
                 <tr><td class="td-label">Base Options</td><td class="engine-options">{{workload.base_options}}</td></tr>
+                <tr><td class="td-label">Base Protocol</td><td>{{workload.base_protocol}}</td></tr>
                 <tr><td class="td-label">Base Time</td><td>{{workload.base_time_control}}</td></tr>
             {% endif %}
 

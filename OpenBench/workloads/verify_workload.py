@@ -79,6 +79,7 @@ def verify_test_creation(errors, request):
         (verify_network        , 'dev_network', 'Dev Network', 'dev_engine'),
         (verify_options        , 'dev_options', 'Threads', 'Dev Options'),
         (verify_options        , 'dev_options', 'Hash', 'Dev Options'),
+        (verify_protocol       , 'dev_protocol', 'Dev Protocol'),
         (verify_time_control   , 'dev_time_control', 'Dev Time Control'),
 
         # Verify everything about the Base Engine
@@ -87,6 +88,7 @@ def verify_test_creation(errors, request):
         (verify_network        , 'base_network', 'Base Network', 'base_engine'),
         (verify_options        , 'base_options', 'Threads', 'Base Options'),
         (verify_options        , 'base_options', 'Hash', 'Base Options'),
+        (verify_protocol       , 'base_protocol', 'Base Protocol'),
         (verify_time_control   , 'base_time_control', 'Base Time Control'),
 
         # Verify everything about the Test Settings
@@ -135,6 +137,7 @@ def verify_tune_creation(errors, request):
         (verify_network               , 'dev_network', 'Network', 'dev_engine'),
         (verify_options               , 'dev_options', 'Threads', 'Options'),
         (verify_options               , 'dev_options', 'Hash', 'Options'),
+        (verify_protocol              , 'dev_protocol', 'Protocol'),
         (verify_time_control          , 'dev_time_control', 'Time Control'),
 
         # Verify everything about the Test Settings
@@ -182,6 +185,7 @@ def verify_datagen_creation(errors, request):
         (verify_network        , 'dev_network', 'Dev Network', 'dev_engine'),
         (verify_options        , 'dev_options', 'Threads', 'Dev Options'),
         (verify_options        , 'dev_options', 'Hash', 'Dev Options'),
+        (verify_protocol       , 'dev_protocol', 'Dev Protocol'),
         (verify_time_control   , 'dev_time_control', 'Dev Time Control'),
 
         # Verify everything about the Base Engine
@@ -190,6 +194,7 @@ def verify_datagen_creation(errors, request):
         (verify_network        , 'base_network', 'Base Network', 'base_engine'),
         (verify_options        , 'base_options', 'Threads', 'Base Options'),
         (verify_options        , 'base_options', 'Hash', 'Base Options'),
+        (verify_protocol       , 'base_protocol', 'Base Protocol'),
         (verify_time_control   , 'base_time_control', 'Base Time Control'),
 
         # Verify everything about the Datagen Settings
@@ -242,6 +247,10 @@ def verify_options(errors, request, field, option, field_name):
 def verify_configuration(errors, request, field, field_name, parent):
     try: assert request.POST[field] in OpenBench.config.OPENBENCH_CONFIG[parent].keys()
     except: errors.append('{0} was not found in the configuration'.format(field_name))
+
+def verify_protocol(errors, request, field, field_name):
+    try: assert request.POST[field] in ['uci', 'xboard']
+    except: errors.append('{0} must be UCI or XBoard'.format(field_name))
 
 def verify_time_control(errors, request, field, field_name):
     try: OpenBench.utils.TimeControl.parse(request.POST[field])

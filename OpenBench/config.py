@@ -141,18 +141,21 @@ def verify_engine_test_preset(test_preset):
         'both_bench',
         'both_network',
         'both_options',
+        'both_protocol',
         'both_time_control',
 
         'dev_branch',
         'dev_bench',
         'dev_network',
         'dev_options',
+        'dev_protocol',
         'dev_time_control',
 
         'base_branch',
         'base_bench',
         'base_network',
         'base_options',
+        'base_protocol',
         'base_time_control',
 
         'test_bounds',
@@ -183,6 +186,7 @@ def verify_engine_tune_preset(tune_preset):
         'dev_bench',
         'dev_network',
         'dev_options',
+        'dev_protocol',
         'dev_time_control',
 
         'spsa_reporting_type',
@@ -216,18 +220,21 @@ def verify_engine_datagen_preset(datagen_preset):
         'both_bench',
         'both_network',
         'both_options',
+        'both_protocol',
         'both_time_control',
 
         'dev_branch',
         'dev_bench',
         'dev_network',
         'dev_options',
+        'dev_protocol',
         'dev_time_control',
 
         'base_branch',
         'base_bench',
         'base_network',
         'base_options',
+        'base_protocol',
         'base_time_control',
 
         'book_name',

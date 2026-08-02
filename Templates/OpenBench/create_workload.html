@@ -75,6 +75,13 @@
                     <label for="dev_options"> {{dev_text}} Options </label> <input id="dev_options" name="dev_options">
                 </div>
                 <div class="row">
+                    <label for="dev_protocol"> {{dev_text}} Protocol </label>
+                    <select id="dev_protocol" name="dev_protocol">
+                        <option selected value="uci">UCI</option>
+                        <option value="xboard">XBoard</option>
+                    </select>
+                </div>
+                <div class="row">
                     <label for="dev_time_control"> {{dev_text}} Time </label> <input id="dev_time_control" name="dev_time_control">
                 </div>
 
@@ -93,6 +100,13 @@
                     </div>
                     <div class="row">
                         <label for="base_options"> Base Options </label> <input id="base_options" name="base_options">
+                    </div>
+                    <div class="row">
+                        <label for="base_protocol"> Base Protocol </label>
+                        <select id="base_protocol" name="base_protocol">
+                            <option selected value="uci">UCI</option>
+                            <option value="xboard">XBoard</option>
+                        </select>
                     </div>
                     <div class="row">
                         <label for="base_time_control" > Base Time </label> <input id="base_time_control" name="base_time_control">
