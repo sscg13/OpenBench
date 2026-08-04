@@ -1,6 +1,7 @@
 {
     "private": false,
     "nps": 500000,
+    "protocol": "xboard",
     "source": "https://github.com/sscg13/Short",
   
     "build": {
@@ -21,45 +22,17 @@
         "draw_adj": "None"
       },
   
-      "STC": {
+      "Gainer": {
         "both_options": "Threads=1 Hash=32",
-        "both_time_control": "8.0+0.08",
+        "both_time_control": "40/72",
         "workload_size": 32
       },
   
-      "LTC": {
+      "Nonreg": {
         "both_options": "Threads=1 Hash=128",
-        "both_time_control": "40.0+0.4",
-        "workload_size": 8
-      },
-  
-  
-      "STC regression": {
-        "both_options": "Threads=1 Hash=32",
-        "both_time_control": "8.0+0.08",
+        "both_time_control": "40/72",
         "workload_size": 32,
         "test_bounds": "[-10.00, 0.00]"
-      },
-  
-      "LTC regression": {
-        "both_options": "Threads=1 Hash=128",
-        "both_time_control": "40.0+0.4",
-        "workload_size": 8,
-        "test_bounds": "[-10.00, 0.00]"
-      },
-  
-      "STC progtest": {
-        "both_options": "Threads=1 Hash=32",
-        "both_time_control": "8.0+0.08",
-        "workload_size": 32,
-        "test_max_games": 3000
-      },
-  
-      "LTC progtest": {
-        "both_options": "Threads=1 Hash=128",
-        "both_time_control": "60.0+0.6",
-        "workload_size": 8,
-        "test_max_games": 1000
       }
     }
   }

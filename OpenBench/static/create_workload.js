@@ -123,6 +123,7 @@ function set_engine(engine, target) {
     document.getElementById(target + '_repo'  ).value = repos[engine] || config.engines[engine].source
 
     create_network_options(target + '_network', engine);
+    set_option(target + '_protocol', config.engines[engine].protocol || 'uci');
 }
 
 function set_option(option_name, option_value) {

@@ -73,6 +73,9 @@ def load_engine_config(engine_name):
         verify_engine_basics(conf)
         verify_engine_build(engine_name, conf)
 
+        # Engine protocol, defaulting to UCI. Presets may override this
+        conf['protocol'] = conf.get('protocol', 'uci')
+
         for preset_type in ['test_presets', 'tune_presets', 'datagen_presets']:
             if preset_type not in conf.keys() or 'default' not in conf[preset_type].keys():
                 conf[preset_type] = { 'default' : {} }
@@ -115,6 +118,7 @@ def verify_engine_basics(conf):
     assert type(conf.get('nps')) == int and conf['nps'] > 0
     assert type(conf.get('source')) == str
     assert type(conf.get('build')) == dict
+    assert conf.get('protocol') in [None, 'uci', 'xboard']
 
 def verify_engine_build(engine_name, conf):
 
