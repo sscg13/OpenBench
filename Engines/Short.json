@@ -23,13 +23,13 @@
       },
   
       "Gainer": {
-        "both_options": "Threads=1 Hash=32",
+        "both_options": "Threads=1 Hash=32 CPU_model=80286 CPU_KHz=25000 VirtualTime=true",
         "both_time_control": "40/72",
         "workload_size": 32
       },
   
       "Nonreg": {
-        "both_options": "Threads=1 Hash=128",
+        "both_options": "Threads=1 Hash=32 CPU_model=80286 CPU_KHz=25000 VirtualTime=true",
         "both_time_control": "40/72",
         "workload_size": 32,
         "test_bounds": "[-10.00, 0.00]"
