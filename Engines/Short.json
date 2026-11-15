@@ -1,5 +1,5 @@
 {
-    "variant": "standard",
+    "variants": ["standard"],
     "private": false,
     "nps": 500000,
     "protocol": "xboard",
