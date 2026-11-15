@@ -39,6 +39,7 @@ from OpenBench.config import OPENBENCH_CONFIG, OPENBENCH_STATIC_VERSION
 from OpenSite.settings import PROJECT_PATH
 
 from OpenBench.models import *
+from OpenBench.variants import PROTOCOL_CHOICES, VARIANT_CHOICES
 from django.contrib.auth.models import User
 from OpenSite.settings import MEDIA_ROOT
 
@@ -595,7 +596,11 @@ def manage_books(request, name=None, action=None):
     # Without a name, all we can do is view the list of Books. The list also
     # carries the creation form, which posts back to <new name>/create/
     if not name:
-        data = { 'books' : Book.objects.order_by('name'), 'can_manage' : can_manage }
+        data = {
+            'books'           : Book.objects.order_by('name'),
+            'can_manage'      : can_manage,
+            'variant_choices' : VARIANT_CHOICES,
+        }
         return render(request, 'manage_books.html', data)
 
     # Creating is the only action for a Book that does not exist yet
@@ -609,7 +614,12 @@ def manage_books(request, name=None, action=None):
 
     # Anyone may view a single Book, but only Managers may change one
     if not action:
-        return render(request, 'manage_book.html', { 'book' : book, 'can_manage' : can_manage })
+        data = {
+            'book'            : book,
+            'can_manage'      : can_manage,
+            'variant_choices' : VARIANT_CHOICES,
+        }
+        return render(request, 'manage_book.html', data)
 
     if not can_manage:
         return redirect(request, '/manage/books/', error='You may not modify Books')
@@ -632,7 +642,12 @@ def manage_engines(request, name=None, action=None):
     # Without a name, all we can do is view the list of Engines. The list also
     # carries the creation form, which posts back to <new name>/create/
     if not name:
-        data = { 'configs' : EngineConfig.objects.order_by('name'), 'can_manage' : can_manage }
+        data = {
+            'configs'          : EngineConfig.objects.order_by('name'),
+            'can_manage'       : can_manage,
+            'variant_choices'  : VARIANT_CHOICES,
+            'protocol_choices' : PROTOCOL_CHOICES,
+        }
         return render(request, 'manage_engines.html', data)
 
     # Creating is the only action for an Engine that does not exist yet
@@ -647,9 +662,11 @@ def manage_engines(request, name=None, action=None):
     # Anyone may view a single Engine, but only Managers may change one
     if not action:
         data = {
-            'engine_config'     : config,
-            'can_manage'        : can_manage,
-            'presets'           : json.dumps(config.presets, indent=4),
+            'engine_config'    : config,
+            'can_manage'       : can_manage,
+            'presets'          : json.dumps(config.presets, indent=4),
+            'variant_choices'  : VARIANT_CHOICES,
+            'protocol_choices' : PROTOCOL_CHOICES,
         }
         return render(request, 'manage_engine.html', data)
 

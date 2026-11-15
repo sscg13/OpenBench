@@ -35,6 +35,7 @@
             <tr><td class="td-label">{{dev_text}} Network</td><td><a href="{{workload|network_download_link:'dev'}}">{{workload.dev_netname}}</td></tr>
             <tr><td class="td-label">{{dev_text}} Options</td><td class="engine-options">{{workload.dev_options}}</td></tr>
             <tr><td class="td-label">{{dev_text}} Time</td><td>{{workload.dev_time_control}}</td></tr>
+            <tr><td class="td-label">{{dev_text}} Protocol</td><td>{{dev_config.protocol|default:"uci"}}</td></tr>
 
             <!-- All of the Base Engine information, which only exists for TESTs -->
             {% if type == "TEST" or type == "DATAGEN" %}
@@ -45,6 +46,7 @@
                 <tr><td class="td-label">Base Network</td><td><a href="{{workload|network_download_link:'base'}}">{{workload.base_netname}}</td></tr>
                 <tr><td class="td-label">Base Options</td><td class="engine-options">{{workload.base_options}}</td></tr>
                 <tr><td class="td-label">Base Time</td><td>{{workload.base_time_control}}</td></tr>
+                <tr><td class="td-label">Base Protocol</td><td>{{base_config.protocol|default:"uci"}}</td></tr>
             {% endif %}
 
             {% if workload|book_download_link %}
@@ -52,6 +54,8 @@
             {% else %}
                 <tr><td class="td-label">Opening Book</td><td><a>{{workload.book_name}}</a></td></tr>
             {% endif %}
+
+            <tr><td class="td-label">Book Variant</td><td>{% if book %}{{book.variant}}{% else %}standard{% endif %}</td></tr>
 
             <tr><td class="td-label">Upload PGNs</td><td>{{workload.upload_pgns}}</td></tr>
             <tr><td class="td-label">Syzygy WDL</td><td>{{workload.syzygy_wdl}}</td></tr>

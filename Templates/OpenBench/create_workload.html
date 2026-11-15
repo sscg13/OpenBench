@@ -213,9 +213,9 @@
 
                 <div class="row">
                     <label for="book_name"> Opening Book </label> <select id="book_name" name="book_name">
-                    <option selected value="NONE"> None </option>
+                    <option selected value="NONE"> None (standard) </option>
                     {% for book in books %}
-                        <option value="{{ book.name }}">{{ book.name }}</option>
+                        <option value="{{ book.name }}">{{ book.name }} ({{ book.variant }})</option>
                     {% endfor %}
                     </select>
                 </div>

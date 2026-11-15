@@ -37,6 +37,8 @@
         <tr class="table-header">
             <th>Name</th>
             <th>Source</th>
+            <th>Variants</th>
+            <th>Protocol</th>
             <th></th>
             <th></th>
             <th></th>
@@ -46,6 +48,8 @@
             <tr>
                 <td>{{config.name}}</td>
                 <td><a href="{{config.source}}">{{config.source|removePrefix:"https://github.com/"}}</a></td>
+                <td>{{config.variants}}</td>
+                <td>{{config.protocol}}</td>
 
                 <td style="text-align: center">
                     {% if config.enabled %}
@@ -109,6 +113,27 @@
                         <select id="enabled" name="enabled">
                             <option selected value="TRUE"> True </option>
                             <option value="FALSE"> False </option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <label for="variants"> Variants </label>
+                        <input id="variants" name="variants" value="standard fischerandom">
+                    </div>
+
+                    <div class="row">
+                        <label></label>
+                        <small> Space separated. Valid values:
+                            {% for value, label in variant_choices %}{{value}}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        </small>
+                    </div>
+
+                    <div class="row">
+                        <label for="protocol"> Protocol </label>
+                        <select id="protocol" name="protocol">
+                            {% for value, label in protocol_choices %}
+                                <option value="{{value}}" {% if value == 'uci' %}selected{% endif %}>{{label}}</option>
+                            {% endfor %}
                         </select>
                     </div>
 

@@ -32,6 +32,7 @@ import os
 from django.core.management.base import BaseCommand, CommandError
 
 from OpenBench.models import Book
+from OpenBench.variants import DEFAULT_VARIANT, verify_variant
 
 class Command(BaseCommand):
 
@@ -53,8 +54,18 @@ class Command(BaseCommand):
                 if type(conf.get('sha')) != str or type(conf.get('source')) != str:
                     raise CommandError('%s must contain string "sha" and "source" fields' % (fname))
 
+                # The variant is optional, and defaults to standard. Shatranj
+                # Books must say so explicitly, as it is never assumed.
+                variant = conf.get('variant', DEFAULT_VARIANT)
+                if (error := verify_variant(variant)):
+                    raise CommandError('%s %s' % (fname, error))
+
                 book, created = Book.objects.update_or_create(
-                    name=name, defaults={ 'source' : conf['source'], 'sha' : conf['sha'] })
+                    name=name, defaults={
+                        'source'  : conf['source'],
+                        'sha'     : conf['sha'],
+                        'variant' : variant,
+                    })
 
                 self.stdout.write('%s %s' % ('Created' if created else 'Updated', book.name))
 

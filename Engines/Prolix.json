@@ -1,5 +1,5 @@
 {
-    "variant": "shatranj",
+    "variants": ["shatranj"],
     "private": false,
     "nps": 1300000,
     "source": "https://github.com/sscg13/Prolix",

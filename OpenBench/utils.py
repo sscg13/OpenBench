@@ -42,6 +42,10 @@ from OpenSite.settings import MEDIA_ROOT, PROJECT_PATH
 from OpenBench.config import OPENBENCH_CONFIG, PRESET_TYPES, verify_engine_presets
 from OpenBench.models import *
 from OpenBench.stats import TrinomialSPRT, PentanomialSPRT
+from OpenBench.variants import (
+    DEFAULT_PROTOCOL, DEFAULT_VARIANT, join_variants, parse_variants,
+    verify_protocol, verify_variant, verify_variants,
+)
 
 import OpenBench.views
 import OpenBench.model_utils
@@ -385,6 +389,9 @@ def book_verify(request):
     if not request.POST['source'].startswith(required_path):
         return 'Sources must start with %s' % (required_path)
 
+    if (error := verify_variant(request.POST.get('variant', DEFAULT_VARIANT))):
+        return error
+
     return None
 
 def book_create(request, name):
@@ -404,7 +411,8 @@ def book_create(request, name):
     # The only place a Book's name is ever set
     Book.objects.create(
         name=name, source=request.POST['source'],
-        sha=request.POST['sha'], enabled=request.POST['enabled'] == 'TRUE')
+        sha=request.POST['sha'], enabled=request.POST['enabled'] == 'TRUE',
+        variant=request.POST.get('variant', DEFAULT_VARIANT))
 
     return OpenBench.views.redirect(request, '/manage/books/', status='Created Book %s' % (name))
 
@@ -417,6 +425,7 @@ def book_edit(request, book):
     book.source  = request.POST['source']
     book.sha     = request.POST['sha']
     book.enabled = request.POST['enabled'] == 'TRUE'
+    book.variant = request.POST.get('variant', book.variant)
     book.save()
 
     return OpenBench.views.redirect(request, '/manage/books/', status='Updated Book %s' % (book.name))
@@ -444,6 +453,13 @@ def engine_verify(request, name):
     try: assert int(request.POST['nps']) > 0
     except: return 'NPS must be a positive integer'
 
+    # Protocol and Variants are properties of the Engine binary, not of a preset
+    if (error := verify_variants(engine_variants(request))):
+        return error
+
+    if (error := verify_protocol(request.POST.get('protocol', DEFAULT_PROTOCOL))):
+        return error
+
     # Presets are only offered when editing. A new Engine starts off blank
     if 'presets' in request.POST:
 
@@ -458,6 +474,11 @@ def engine_verify(request, name):
         return 'Private Engines require a Config/credentials.%s file' % (name.replace(' ', '').lower())
 
     return None
+
+def engine_variants(request):
+
+    # Accepted variants arrive space separated, just like the build settings
+    return parse_variants(request.POST.get('variants', join_variants(DEFAULT_ENGINE_VARIANTS)))
 
 def engine_fields(request):
 
@@ -474,6 +495,8 @@ def engine_fields(request):
         'build_compilers' : request.POST['build_compilers'],
         'build_cpuflags'  : request.POST['build_cpuflags'],
         'build_systems'   : request.POST['build_systems'],
+        'variants'        : join_variants(engine_variants(request)),
+        'protocol'        : request.POST.get('protocol', DEFAULT_PROTOCOL),
         'presets'         : presets,
     }
 

@@ -27,6 +27,7 @@ from django.db.models import JSONField, ForeignKey, DateTimeField, OneToOneField
 from django.db.models import CASCADE, PROTECT, Model, TextChoices
 from django.contrib.auth.models import User
 
+from OpenBench.variants import DEFAULT_ENGINE_VARIANTS, DEFAULT_PROTOCOL, DEFAULT_VARIANT
 from OpenSite.settings import MEDIA_ROOT
 
 class Engine(Model):
@@ -47,6 +48,10 @@ class Book(Model):
     sha     = CharField(max_length=64)
     enabled = BooleanField(default=True)
 
+    # The variant that a Workload using this Book will play. Only the Engines
+    # that accept this variant may be used alongside it. See OpenBench/variants
+    variant = CharField(max_length=16, default=DEFAULT_VARIANT)
+
     def __str__(self):
         return self.name
 
@@ -65,11 +70,26 @@ class EngineConfig(Model):
     build_cpuflags  = CharField(max_length=64, blank=True)
     build_systems   = CharField(max_length=64, blank=True)
 
+    # Space seperated list of the variants this Engine knows how to play. The
+    # Book decides the variant of a Workload, and every Engine in that Workload
+    # must have declared it here. Shatranj is never accepted by default.
+    variants = CharField(max_length=64, default=' '.join(DEFAULT_ENGINE_VARIANTS))
+
+    # The protocol of the Engine binary, either 'uci' or 'xboard'
+    protocol = CharField(max_length=16, default=DEFAULT_PROTOCOL)
+
     # { 'test_presets' : {...}, 'tune_presets' : {...}, 'datagen_presets' : {...} }
     presets = JSONField(default=dict, blank=True)
 
     def __str__(self):
         return self.name
+
+    def variants_list(self):
+
+        # A blank column is treated as the default, so that a row written before
+        # variants existed never ends up accepting no Book at all
+
+        return self.variants.split() or list(DEFAULT_ENGINE_VARIANTS)
 
     def build(self):
         return {

@@ -33,6 +33,10 @@ from django.core.management.base import BaseCommand, CommandError
 
 from OpenBench.config import PRESET_TYPES, verify_engine_presets
 from OpenBench.models import EngineConfig
+from OpenBench.variants import (
+    DEFAULT_ENGINE_VARIANTS, DEFAULT_PROTOCOL, join_variants,
+    verify_protocol, verify_variants,
+)
 
 class Command(BaseCommand):
 
@@ -69,6 +73,19 @@ def engine_fields(fname, name, conf):
     if type(conf.get('private')) != bool:
         raise CommandError('%s must contain a boolean "private"' % (fname))
 
+    # Both are optional. Engines default to the chess variants and to UCI, so
+    # that an untouched Engines/<name>.json keeps playing as it always has.
+    variants = conf.get('variants', list(DEFAULT_ENGINE_VARIANTS))
+    if type(variants) != list:
+        raise CommandError('%s must contain a "variants" array of strings' % (fname))
+
+    if (error := verify_variants(variants)):
+        raise CommandError('%s %s' % (fname, error))
+
+    protocol = conf.get('protocol', DEFAULT_PROTOCOL)
+    if (error := verify_protocol(protocol)):
+        raise CommandError('%s %s' % (fname, error))
+
     # Missing preset types were previously filled in when the file was loaded
     presets = { x : conf.get(x) or { 'default' : {} } for x in PRESET_TYPES }
     for group in presets.values():
@@ -87,6 +104,8 @@ def engine_fields(fname, name, conf):
         'build_compilers' : ' '.join(build.get('compilers', [])),
         'build_cpuflags'  : ' '.join(build.get('cpuflags', [])),
         'build_systems'   : ' '.join(build.get('systems', [])),
+        'variants'        : join_variants(variants),
+        'protocol'        : protocol,
         'presets'         : presets,
     }
 

@@ -35,6 +35,15 @@
                     </select>
                 </div>
 
+                <div class="row">
+                    <label for="variant"> Variant </label>
+                    <select id="variant" name="variant" {% if not can_manage %}disabled{% endif %}>
+                        {% for value, label in variant_choices %}
+                            <option value="{{value}}" {% if book.variant == value %}selected{% endif %}>{{label}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 {% if can_manage %}
                     <input class="anchorbutton btn-blue w-100" type="submit" value="Update Book">
                 {% endif %}

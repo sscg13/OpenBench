@@ -48,6 +48,27 @@
                     </select>
                 </div>
 
+                <div class="row">
+                    <label for="variants"> Variants </label>
+                    <input id="variants" name="variants" value="{{engine_config.variants}}" {% if not can_manage %}readonly{% endif %}>
+                </div>
+
+                <div class="row">
+                    <label></label>
+                    <small> Space separated. Valid values:
+                        {% for value, label in variant_choices %}{{value}}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    </small>
+                </div>
+
+                <div class="row">
+                    <label for="protocol"> Protocol </label>
+                    <select id="protocol" name="protocol" {% if not can_manage %}disabled{% endif %}>
+                        {% for value, label in protocol_choices %}
+                            <option value="{{value}}" {% if engine_config.protocol == value %}selected{% endif %}>{{label}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <h3> Build Settings </h3>
 
                 <div class="row">

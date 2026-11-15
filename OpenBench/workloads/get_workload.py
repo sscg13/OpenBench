@@ -231,9 +231,10 @@ def workload_to_dictionary(test, result, machine):
     book = Book.objects.filter(name=test.book_name).first()
 
     workload['test']['book'] = {
-        'name'   : test.book_name,
-        'sha'    : book.sha    if book else None,
-        'source' : book.source if book else None,
+        'name'    : test.book_name,
+        'sha'     : book.sha    if book else None,
+        'source'  : book.source if book else None,
+        'variant' : book.variant if book else None,
     }
 
     # Looked up by name without regard for the enabled flag, so that disabling
@@ -254,6 +255,7 @@ def workload_to_dictionary(test, result, machine):
         'time_control' : test.dev_time_control,
         'build'        : dev_config.build(),
         'private'      : dev_config.private,
+        'protocol'     : dev_config.protocol,
     }
 
     workload['test']['base'] = {
@@ -269,6 +271,7 @@ def workload_to_dictionary(test, result, machine):
         'time_control' : test.base_time_control,
         'build'        : base_config.build(),
         'private'      : base_config.private,
+        'protocol'     : base_config.protocol,
     }
 
     workload['distribution']   = game_distribution(test, machine)

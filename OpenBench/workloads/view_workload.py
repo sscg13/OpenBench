@@ -45,7 +45,10 @@ def view_workload(request, workload, workload_type):
     # aggregate summary is fetched automatically once the page loads.
 
     data = {
-        'workload' : workload,
+        'workload'    : workload,
+        'book'        : Book.objects.filter(name=workload.book_name).first(),
+        'dev_config'  : EngineConfig.objects.filter(name=workload.dev_engine).first(),
+        'base_config' : EngineConfig.objects.filter(name=workload.base_engine).first(),
     }
 
     if workload_type == 'TEST':
