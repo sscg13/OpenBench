@@ -5,7 +5,7 @@
 
     "fastchess_min_version" : "1.8.1",
     "fastchess_repo_url"    : "https://github.com/sscg13/fastchess",
-    "fastchess_repo_ref"    : "shatranj-m1",
+    "fastchess_repo_ref"    : "shatranj",
 
     "use_cross_approval"          : false,
     "require_login_to_view"       : false,
