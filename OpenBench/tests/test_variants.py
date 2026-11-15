@@ -182,7 +182,7 @@ class VerificationTests(TestCase):
 
         Book.objects.create(name='Standard.epd', source=SOURCE, sha=SHA, variant='standard')
         Book.objects.create(name='FRC.epd', source=SOURCE, sha=SHA, variant='fischerandom')
-        Book.objects.create(name='shatranj_balanced.epd', source=SOURCE, sha=SHA, variant='shatranj')
+        Book.objects.create(name='shatranj_dfrs.epd', source=SOURCE, sha=SHA, variant='shatranj')
 
         EngineConfig.objects.create(name='ChessBot')
         EngineConfig.objects.create(name='ShatranjBot', variants='shatranj')
@@ -193,7 +193,7 @@ class VerificationTests(TestCase):
         self.assertEqual(resolve_book_variant(''), 'standard')
         self.assertEqual(resolve_book_variant('Missing.epd'), 'standard')
         self.assertEqual(resolve_book_variant('FRC.epd'), 'fischerandom')
-        self.assertEqual(resolve_book_variant('shatranj_balanced.epd'), 'shatranj')
+        self.assertEqual(resolve_book_variant('shatranj_dfrs.epd'), 'shatranj')
 
     def test_standard_and_frc_books_pass_with_default_engines(self):
         for book in ['Standard.epd', 'FRC.epd']:
@@ -207,7 +207,7 @@ class VerificationTests(TestCase):
     def test_shatranj_book_rejects_a_default_chess_engine(self):
         errors = []
         verify_test_creation(errors, FakeRequest({
-            'book_name' : 'shatranj_balanced.epd',
+            'book_name' : 'shatranj_dfrs.epd',
             'dev_engine' : 'ChessBot', 'base_engine' : 'ChessBot',
             'syzygy_wdl' : 'DISABLED', 'syzygy_adj' : 'DISABLED',
         }))
@@ -218,7 +218,7 @@ class VerificationTests(TestCase):
     def test_shatranj_book_rejects_an_xboard_engine(self):
         errors = []
         verify_test_creation(errors, FakeRequest({
-            'book_name' : 'shatranj_balanced.epd',
+            'book_name' : 'shatranj_dfrs.epd',
             'dev_engine' : 'ShatranjBot', 'base_engine' : 'XboardShatranj',
             'syzygy_wdl' : 'DISABLED', 'syzygy_adj' : 'DISABLED',
         }))
@@ -233,7 +233,7 @@ class VerificationTests(TestCase):
     def test_shatranj_requires_syzygy_to_be_disabled(self):
         errors = []
         verify_test_creation(errors, FakeRequest({
-            'book_name' : 'shatranj_balanced.epd',
+            'book_name' : 'shatranj_dfrs.epd',
             'dev_engine' : 'ShatranjBot', 'base_engine' : 'ShatranjBot',
             'syzygy_wdl' : 'OPTIONAL', 'syzygy_adj' : 'OPTIONAL',
         }))
@@ -244,7 +244,7 @@ class VerificationTests(TestCase):
     def test_shatranj_with_syzygy_disabled_passes(self):
         errors = []
         verify_test_creation(errors, FakeRequest({
-            'book_name' : 'shatranj_balanced.epd',
+            'book_name' : 'shatranj_dfrs.epd',
             'dev_engine' : 'ShatranjBot', 'base_engine' : 'ShatranjBot',
             'syzygy_wdl' : 'DISABLED', 'syzygy_adj' : 'DISABLED',
         }))
@@ -254,7 +254,7 @@ class VerificationTests(TestCase):
     def test_tune_only_checks_the_dev_engine(self):
         errors = []
         verify_tune_creation(errors, FakeRequest({
-            'book_name' : 'shatranj_balanced.epd', 'dev_engine' : 'ChessBot',
+            'book_name' : 'shatranj_dfrs.epd', 'dev_engine' : 'ChessBot',
             'syzygy_wdl' : 'DISABLED', 'syzygy_adj' : 'DISABLED',
             'spsa_inputs' : 'Test, int, 1, 0, 10, 0, 1',
         }))
@@ -275,7 +275,7 @@ class VerificationTests(TestCase):
     def test_datagen_checks_both_engines(self):
         errors = []
         verify_datagen_creation(errors, FakeRequest({
-            'book_name' : 'shatranj_balanced.epd',
+            'book_name' : 'shatranj_dfrs.epd',
             'dev_engine' : 'ChessBot', 'base_engine' : 'ChessBot',
             'syzygy_wdl' : 'DISABLED', 'syzygy_adj' : 'DISABLED',
         }))
