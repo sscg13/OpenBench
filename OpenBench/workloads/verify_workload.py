@@ -92,6 +92,8 @@ def verify_test_creation(errors, request):
         (verify_book           , 'book_name', 'Book'),
         (verify_engine_variant , 'Dev Variant', 'dev_engine'),
         (verify_engine_variant , 'Base Variant', 'base_engine'),
+        (verify_engine_protocol, 'Dev Protocol', 'dev_engine'),
+        (verify_engine_protocol, 'Base Protocol', 'base_engine'),
         (verify_shatranj_syzygy,),
         (verify_upload_pgns    , 'upload_pgns', 'Upload PGNs'),
         (verify_test_mode      , 'test_mode'),
@@ -142,6 +144,7 @@ def verify_tune_creation(errors, request):
         # Verify everything about the Test Settings
         (verify_book                  , 'book_name', 'Book'),
         (verify_engine_variant        , 'Dev Variant', 'dev_engine'),
+        (verify_engine_protocol       , 'Dev Protocol', 'dev_engine'),
         (verify_shatranj_syzygy       ,),
         (verify_upload_pgns           , 'upload_pgns', 'Upload PGNs'),
 
@@ -203,6 +206,8 @@ def verify_datagen_creation(errors, request):
         (verify_datagen_book   , 'book_name', 'Book'),
         (verify_engine_variant , 'Dev Variant', 'dev_engine'),
         (verify_engine_variant , 'Base Variant', 'base_engine'),
+        (verify_engine_protocol, 'Dev Protocol', 'dev_engine'),
+        (verify_engine_protocol, 'Base Protocol', 'base_engine'),
         (verify_shatranj_syzygy,),
         (verify_upload_pgns    , 'upload_pgns', 'Upload PGNs'),
 
@@ -267,8 +272,7 @@ def resolve_book_variant(book_name):
 
 def verify_engine_variant(errors, request, field_name, engine_field):
 
-    # Every Engine in the Workload must accept the variant of the chosen Book.
-    # The shatranj binary is UCI-only, so it may not be run over xboard either.
+    # Every Engine in the Workload must accept the variant of the chosen Book
 
     variant = resolve_book_variant(request.POST.get('book_name'))
     engine  = EngineConfig.objects.filter(name=request.POST.get(engine_field)).first()
@@ -280,11 +284,22 @@ def verify_engine_variant(errors, request, field_name, engine_field):
     if variant not in engine.variants_list():
         errors.append('%s: %s does not accept the %s book variant' % (
             field_name, engine.name, variant))
+
+def verify_engine_protocol(errors, request, field_name, engine_field):
+
+    # The match runner (fastchess) speaks UCI only, so an Engine configured
+    # for any other protocol cannot be launched at all. Reject the Workload
+    # here, instead of letting it start and die on "Unsupported protocol."
+
+    engine = EngineConfig.objects.filter(name=request.POST.get(engine_field)).first()
+
+    # Unknown Engines are reported by verify_engine
+    if engine is None:
         return
 
-    if variant == SHATRANJ and engine.protocol != DEFAULT_PROTOCOL:
-        errors.append('%s: %s uses the %s protocol, but %s requires %s' % (
-            field_name, engine.name, engine.protocol, variant, DEFAULT_PROTOCOL))
+    if engine.protocol != DEFAULT_PROTOCOL:
+        errors.append('%s: %s uses the %s protocol, but the match runner only supports %s' % (
+            field_name, engine.name, engine.protocol, DEFAULT_PROTOCOL.upper()))
 
 def verify_shatranj_syzygy(errors, request):
 

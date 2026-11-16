@@ -187,6 +187,7 @@ class VerificationTests(TestCase):
         EngineConfig.objects.create(name='ChessBot')
         EngineConfig.objects.create(name='ShatranjBot', variants='shatranj')
         EngineConfig.objects.create(name='XboardShatranj', variants='shatranj', protocol='xboard')
+        EngineConfig.objects.create(name='XboardChess', protocol='xboard')
 
     def test_resolving_the_book_variant(self):
         self.assertEqual(resolve_book_variant('NONE'), 'standard')
@@ -224,11 +225,47 @@ class VerificationTests(TestCase):
         }))
 
         self.assertIn(
-            'Base Variant: XboardShatranj uses the xboard protocol, but shatranj requires uci',
+            'Base Protocol: XboardShatranj uses the xboard protocol, '
+            'but the match runner only supports UCI',
             errors)
 
         # The UCI engine on the same Book is fine
         self.assertFalse(any('ShatranjBot' in error for error in variant_errors(errors)))
+
+    def test_xboard_engines_are_rejected_on_any_book(self):
+
+        # fastchess speaks UCI only, so an xboard Engine can never be launched,
+        # whatever the variant of the Book happens to be
+
+        for book in ['Standard.epd', 'FRC.epd']:
+
+            errors = []
+            verify_test_creation(errors, FakeRequest({
+                'book_name' : book,
+                'dev_engine' : 'XboardChess', 'base_engine' : 'XboardChess',
+                'syzygy_wdl' : 'OPTIONAL', 'syzygy_adj' : 'OPTIONAL',
+            }))
+
+            for branch in ['Dev', 'Base']:
+                self.assertIn(
+                    '%s Protocol: XboardChess uses the xboard protocol, '
+                    'but the match runner only supports UCI' % (branch),
+                    errors)
+
+    def test_tune_rejects_an_xboard_engine(self):
+
+        errors = []
+        verify_tune_creation(errors, FakeRequest({
+            'book_name' : 'Standard.epd', 'dev_engine' : 'XboardChess',
+            'syzygy_wdl' : 'OPTIONAL', 'syzygy_adj' : 'OPTIONAL',
+            'spsa_inputs' : 'Test, int, 1, 0, 10, 0, 1',
+        }))
+
+        self.assertIn(
+            'Dev Protocol: XboardChess uses the xboard protocol, '
+            'but the match runner only supports UCI',
+            errors)
+        self.assertFalse(any('Base' in error for error in errors))
 
     def test_shatranj_requires_syzygy_to_be_disabled(self):
         errors = []
