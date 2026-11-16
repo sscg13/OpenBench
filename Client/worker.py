@@ -61,7 +61,7 @@ from client import try_forever
 
 ## Basic configuration of the Client. These timeouts can be changed at will
 
-CLIENT_VERSION   = 53 # Client version to send to the Server
+CLIENT_VERSION   = 54 # Client version to send to the Server
 TIMEOUT_HTTP     = 30 # Timeout in seconds for HTTP requests
 TIMEOUT_ERROR    = 60 # Timeout in seconds when any errors are thrown
 TIMEOUT_WORKLOAD = 60 # Timeout in seconds between workload requests
@@ -416,6 +416,14 @@ class ServerReporter:
 
         return ServerReporter.report(config, 'clientSubmitPGN', payload, files)
 
+def get_workload_variant(config):
+
+    # The Book decides the variant of the Workload. A Book that has since been
+    # deleted carries no variant, which is treated as standard.
+
+    book = config.workload['test'].get('book') or {}
+    return book.get('variant') or 'standard'
+
 class MatchRunner:
 
     ## Handles building the very long string of arguments that need to be passed
@@ -424,18 +432,25 @@ class MatchRunner:
 
     @staticmethod
     def executable(config):
-        return ['fastchess-ob.exe', './fastchess-ob'][IS_LINUX]
+
+        # Shatranj has its own build of the match runner, as a separate binary
+        variant = get_workload_variant(config)
+        name   = ['fastchess-ob', 'fastshatranj-ob'][variant == 'shatranj']
+
+        # Never fall back to the chess binary if the shatranj one is missing
+        if variant == 'shatranj':
+            path = utils.check_for_engine_binary(os.path.join(os.getcwd(), name))
+            if not path:
+                raise utils.OpenBenchFatalWorkerException(
+                    'Shatranj workload requires %s, which is missing' % (name))
+
+        return [name + '.exe', './' + name][IS_LINUX]
 
     @staticmethod
     def basic_settings(config):
 
-        # Assume Fischer if FRC, 960, or FISCHER appears in the Opening Book
-        book_name = config.workload['test']['book']['name'].upper()
-        is_frc    = 'FRC' in book_name or '960' in book_name or 'FISCHER' in book_name
-        variant   = ['standard', 'fischerandom'][is_frc]
-
         # Always include -recover, -variant, and -testEnv
-        return '-recover -variant %s -testEnv' % variant
+        return '-recover -variant %s -testEnv' % get_workload_variant(config)
 
     @staticmethod
     def concurrency_settings(config):
@@ -500,9 +515,10 @@ class MatchRunner:
     def engine_settings(config, command, branch, scale_factor, runner_idx):
 
         # Extract configuration from the Workload
-        options = config.workload['test'][branch]['options']
-        engine  = config.workload['test'][branch]['engine']
-        syzygy  = config.workload['test']['syzygy_wdl']
+        options  = config.workload['test'][branch]['options']
+        engine   = config.workload['test'][branch]['engine']
+        syzygy   = config.workload['test']['syzygy_wdl']
+        protocol = config.workload['test'][branch].get('protocol', 'uci')
 
         # Human-readable name, and scale the time control
         name    = command.replace('.exe', '')
@@ -523,7 +539,8 @@ class MatchRunner:
 
         # Join options together in format expected by match runner
         options = ' option.'.join([''] + re.findall(r'"[^"]*"|\S+', options))
-        return '-engine dir=Engines/ cmd=./%s proto=uci %s%s name=%s-%s' % (command, control, options, engine, branch)
+        return '-engine dir=Engines/ cmd=./%s proto=%s %s%s name=%s-%s' % (
+            command, protocol, control, options, engine, branch)
 
     @staticmethod
     def pgnout_settings(config, timestamp, runner_idx):
@@ -586,9 +603,11 @@ class MatchRunner:
 
         if IS_LINUX:
             utils.kill_process_by_name('fastchess-ob')
+            utils.kill_process_by_name('fastshatranj-ob')
 
         if IS_WINDOWS:
             utils.kill_process_by_name('fastchess-ob.exe')
+            utils.kill_process_by_name('fastshatranj-ob.exe')
 
         utils.kill_process_by_name(dev_process)
         utils.kill_process_by_name(base_process)
@@ -783,13 +802,15 @@ def locate_utility(util, force_exit=True, report_error=True):
 
 def set_runner_permissions():
 
-    status = os.system('sudo -n chmod 777 fastchess-ob > /dev/null 2>&1')
+    for runner in ['fastchess-ob', 'fastshatranj-ob']:
 
-    if status != 0:
-        status = os.system('chmod 777 fastchess-ob > /dev/null 2>&1')
+        status = os.system('sudo -n chmod 777 %s > /dev/null 2>&1' % (runner))
 
-    if status != 0:
-        print ('[ERROR] Unable to set execute permissions on fastchess-ob')
+        if status != 0:
+            status = os.system('chmod 777 %s > /dev/null 2>&1' % (runner))
+
+        if status != 0:
+            print ('[ERROR] Unable to set execute permissions on %s' % (runner))
 
 
 def cleanup_client():
@@ -939,30 +960,36 @@ def determine_scale_factor(config, dev_name, base_name):
 ## connection and then make simple requests to retrieve Workloads as json objects
 
 def server_configure_fastchess(config):
-    server_configure_match_runner(config, 'fastchess', build_fastchess_in_dir)
 
-def server_configure_match_runner(config, name, build_func):
+    # Both binaries come from the same fastchess checkout. The shatranj build
+    # is the same match runner with a different variant hard-wired in.
+    runners = [('fastchess', 'fastchess-ob'), ('fastshatranj', 'fastshatranj-ob')]
 
     # OpenBench Server holds the runner repo and git-ref
-    print ('\nConfiguring %s...' % name)
-    print ('> Requesting %s configuration from openbench' % name)
+    print ('\nConfiguring fastchess...')
+    print ('> Requesting fastchess configuration from openbench')
     target  = url_join(config.server, 'clientMatchRunnerVersionRef')
     payload = { 'username' : config.username, 'password' : config.password }
     data    = requests.post(target, data=payload, timeout=TIMEOUT_HTTP).json()
 
-    # Might already have a sufficiently new Fastchess binary
-    print ('> Checking for existing %s-ob binary' % name)
-    runner_path = os.path.join(os.getcwd(), '%s-ob' % name)
-    runner_path = utils.check_for_engine_binary(runner_path)
-    acceptable_ver = compare_versions(runner_path, data['%s_min_version' % name])
+    # Might already have sufficiently new binaries. Both are required, since a
+    # worker from before shatranj support may only have fastchess-ob.
+    print ('> Checking for existing fastchess-ob and fastshatranj-ob binaries')
+    min_version = data['fastchess_min_version']
+    versions    = {}
 
-    if acceptable_ver:
-        print ('> Found %s-ob v%s' % (name, acceptable_ver))
-        setattr(config, '%s_ver' % name, acceptable_ver)
+    for name, out_name in runners:
+        runner_path    = utils.check_for_engine_binary(os.path.join(os.getcwd(), out_name))
+        versions[name] = compare_versions(runner_path, min_version)
+
+    if all(versions.values()):
+        for name, out_name in runners:
+            print ('> Found %s v%s' % (out_name, versions[name]))
+        config.fastchess_ver = versions['fastchess']
         return
 
     # Download a .zip archive of the git-ref from the specified repo
-    repo_url, repo_ref = data['%s_repo_url' % name], data['%s_repo_ref' % name]
+    repo_url, repo_ref = data['fastchess_repo_url'], data['fastchess_repo_ref']
     print ('> Downloading %s from %s' % (repo_ref, repo_url))
     response = requests.get(url_join(repo_url, 'archive', '%s.zip' % repo_ref))
 
@@ -978,40 +1005,50 @@ def server_configure_match_runner(config, name, build_func):
             zip_ref.extractall(temp_dir)
 
         # Prepare to build, using the root folder of the extracted files as the cwd
-        print ('> Extracting and building %s %s' % (name, repo_ref))
+        print ('> Extracting and building fastchess %s' % repo_ref)
         runner_dir = os.path.join(temp_dir, os.listdir(temp_dir)[0])
-        bin_path   = os.path.join(runner_dir, name)
 
-        build_func(config, runner_dir)
+        build_fastchess_in_dir(config, runner_dir)
 
-        # Somehow we built runner but failed to find the binary
-        if not utils.check_for_engine_binary(bin_path):
-            raise OpenBenchMatchRunnerBuildFailedException()
+        for name, out_name in runners:
 
-        # Append .exe if needed, and then report the match runner version that was built
-        binary  = utils.check_for_engine_binary(bin_path)
-        version = get_version(binary)
-        setattr(config, '%s_ver' % name, version)
-        print ('> Finished building v%s' % version)
+            # Somehow we built fastchess but failed to find one of the binaries
+            binary = utils.check_for_engine_binary(os.path.join(runner_dir, name))
+            if not binary:
+                raise OpenBenchMatchRunnerBuildFailedException()
 
-        # Move the finished match runner binary to the Client's Root directory
-        out_path = os.path.join(os.getcwd(), os.path.basename(binary).replace(name, '%s-ob' % name))
-        shutil.move(binary, out_path)
+            # Report the match runner versions that were built
+            versions[name] = get_version(binary)
+            print ('> Finished building %s v%s' % (name, versions[name]))
+
+            # Move the finished match runner binary to the Client's Root directory
+            suffix   = '.exe' if binary.endswith('.exe') else ''
+            out_path = os.path.join(os.getcwd(), out_name + suffix)
+            shutil.move(binary, out_path)
+
+        config.fastchess_ver = versions['fastchess']
 
 def build_fastchess_in_dir(config, runner_dir):
     print ('> Using C++ compiler %s...' % config.cxx_comp)
 
-    # Execute the build, using our C++ compiler, and record any output
-    make_cmd    = ['make', '-j', 'CXX=%s' % config.cxx_comp]
-    process     = subprocess.Popen(make_cmd, cwd=runner_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    comp_output = process.communicate()[0].decode('utf-8')
+    # Build both binaries from the one checkout. They have their own object
+    # directories, so the two invocations do not interfere with each other.
+    for target in ['', 'fastshatranj']:
 
-    # Make threw an error, and thus failed to build
-    if process.returncode:
-        print ('\nFailed to build fastchess\n\nCompiler Output:')
-        for line in comp_output.split('\n'):
-            print ('> %s' % (line))
-        raise OpenBenchMatchRunnerBuildFailedException()
+        make_cmd = ['make', '-j', 'CXX=%s' % config.cxx_comp]
+        if target:
+            make_cmd.append(target)
+
+        # Execute the build, using our C++ compiler, and record any output
+        process     = subprocess.Popen(make_cmd, cwd=runner_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        comp_output = process.communicate()[0].decode('utf-8')
+
+        # Make threw an error, and thus failed to build
+        if process.returncode:
+            print ('\nFailed to build %s\n\nCompiler Output:' % (target or 'fastchess'))
+            for line in comp_output.split('\n'):
+                print ('> %s' % (line))
+            raise OpenBenchMatchRunnerBuildFailedException()
 
 def server_configure_worker(config):
 
