@@ -16,6 +16,7 @@
         document.addEventListener(
             'DOMContentLoaded', function () {
                 change_engine('{{ profile.engine }}', 'dev', '{{workload}}');
+                apply_book_variant();
                 enforce_default_text('dev_repo', 'https://github.com/');
                 enforce_default_text('base_repo', 'https://github.com/');
             }, false
@@ -212,10 +213,10 @@
                 <h3> General Settings </h3>
 
                 <div class="row">
-                    <label for="book_name"> Opening Book </label> <select id="book_name" name="book_name">
-                    <option selected value="NONE"> None (standard) </option>
+                    <label for="book_name"> Opening Book </label> <select id="book_name" name="book_name" onchange="apply_book_variant();">
+                    <option selected value="NONE" data-variant="standard"> None (standard) </option>
                     {% for book in books %}
-                        <option value="{{ book.name }}">{{ book.name }} ({{ book.variant }})</option>
+                        <option value="{{ book.name }}" data-variant="{{ book.variant }}">{{ book.name }} ({{ book.variant }})</option>
                     {% endfor %}
                     </select>
                 </div>

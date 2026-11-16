@@ -4,6 +4,9 @@ var engines  = JSON.parse(document.getElementById('json-engines' ).textContent);
 var networks = JSON.parse(document.getElementById('json-networks').textContent);
 var repos    = JSON.parse(document.getElementById('json-repos'   ).textContent);
 
+// Saved when a shatranj Book forces Syzygy off, so leaving it restores them
+var syzygy_before_shatranj = null;
+
 function create_network_options(field_id, engine) {
 
     var has_default     = false;
@@ -154,6 +157,50 @@ function set_option(option_name, option_value) {
             if (element.options[i].text === option_value || element.options[i].value === option_value)
                 element.value = element.options[i].value;
     }
+}
+
+function get_book_variant() {
+
+    // Every Book option is annotated with the variant it is played under
+    const book = document.getElementById('book_name');
+
+    if (book == null || book.selectedIndex < 0)
+        return 'standard';
+
+    return book.options[book.selectedIndex].dataset.variant || 'standard';
+}
+
+function apply_book_variant() {
+
+    // The shatranj binary cannot accept any Syzygy setting, so a shatranj Book
+    // forces both of them to Disabled. Leaving the Book restores the values
+    // that were there beforehand, unless they were changed by hand meanwhile.
+    const wdl = document.getElementById('syzygy_wdl');
+    const adj = document.getElementById('syzygy_adj');
+
+    if (wdl == null || adj == null)
+        return;
+
+    if (get_book_variant() != 'shatranj') {
+
+        if (syzygy_before_shatranj != null) {
+
+            if (wdl.value == 'DISABLED' && adj.value == 'DISABLED') {
+                set_option('syzygy_wdl', syzygy_before_shatranj.wdl);
+                set_option('syzygy_adj', syzygy_before_shatranj.adj);
+            }
+
+            syzygy_before_shatranj = null;
+        }
+
+        return;
+    }
+
+    if (syzygy_before_shatranj == null)
+        syzygy_before_shatranj = { 'wdl' : wdl.value, 'adj' : adj.value };
+
+    set_option('syzygy_wdl', 'DISABLED');
+    set_option('syzygy_adj', 'DISABLED');
 }
 
 function retain_specific_options(engine, preset, workload_type) {
