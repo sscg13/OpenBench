@@ -2,7 +2,7 @@
     "variants": ["standard"],
     "private": false,
     "nps": 500000,
-    "protocol": "xboard",
+    "protocol": "uci",
     "source": "https://github.com/sscg13/Short",
   
     "build": {
