@@ -22,6 +22,7 @@ import argparse
 import hashlib
 import os
 import platform
+import re
 import requests
 import shutil
 import subprocess
@@ -152,15 +153,31 @@ def read_git_credentials(engine):
     raise OpenBenchMissingAPICredentialsException('%s not found' % fname)
 
 
-def engine_binary_name(engine, commit_sha, net_path, isa=None):
+def hardware_tag(isa_name, cpu_name):
+
+    # Engines build with -march=native, so a binary built on one machine cannot
+    # be trusted on another. Clients may share their directory over the network,
+    # so the CPU model is part of the name and each machine builds its own copy.
+    # ISA names are too coarse for that: an AMD EPYC and an Intel Xeon both
+    # report x86-64-avx512icl while their native code differs.
+
+    tag = (cpu_name or '').strip()
+
+    # py-cpuinfo returns the raw brand string, which carries trademark noise
+    if tag.replace('(R)', '').replace('(TM)', '').strip().lower() in ('', 'unknown'):
+        tag = isa_name or 'unknown'
+
+    tag = tag.replace('(R)', ' ').replace('(TM)', ' ')
+    tag = re.sub(r'[^A-Za-z0-9]+', '-', tag).strip('-').upper()
+
+    return tag[:48] or 'UNKNOWN'
+
+def engine_binary_name(engine, commit_sha, net_path, hardware=None):
     name = '%s-%s' % (engine, commit_sha.upper()[:8])
     if net_path:
         name += '-%s' % (net_path[-8:])
-    # Engines build with -march=native, so a binary built on one node cannot be
-    # trusted on another. Clients may share their directory over the network,
-    # so the ISA is part of the name: each node builds and caches its own copy.
-    if isa:
-        name += '-%s' % (isa.upper())
+    if hardware:
+        name += '-%s' % (hardware)
     return name
 
 def check_for_engine_binary(out_path):

@@ -61,7 +61,7 @@ from client import try_forever
 
 ## Basic configuration of the Client. These timeouts can be changed at will
 
-CLIENT_VERSION   = 55 # Client version to send to the Server
+CLIENT_VERSION   = 56 # Client version to send to the Server
 TIMEOUT_HTTP     = 30 # Timeout in seconds for HTTP requests
 TIMEOUT_ERROR    = 60 # Timeout in seconds when any errors are thrown
 TIMEOUT_WORKLOAD = 60 # Timeout in seconds between workload requests
@@ -1263,7 +1263,8 @@ def safe_download_engine(config, branch, net_path):
     source      = config.workload['test'][branch]['source']
     private     = config.workload['test'][branch]['private']
 
-    bin_name = utils.engine_binary_name(engine, commit_sha, net_path, config.isa_name)
+    bin_name = utils.engine_binary_name(engine, commit_sha, net_path,
+        utils.hardware_tag(config.isa_name, config.cpu_name))
     out_path = os.path.join('Engines', bin_name)
 
     make_path = config.workload['test'][branch]['build']['path']
