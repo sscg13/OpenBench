@@ -152,10 +152,15 @@ def read_git_credentials(engine):
     raise OpenBenchMissingAPICredentialsException('%s not found' % fname)
 
 
-def engine_binary_name(engine, commit_sha, net_path):
+def engine_binary_name(engine, commit_sha, net_path, isa=None):
     name = '%s-%s' % (engine, commit_sha.upper()[:8])
     if net_path:
         name += '-%s' % (net_path[-8:])
+    # Engines build with -march=native, so a binary built on one node cannot be
+    # trusted on another. Clients may share their directory over the network,
+    # so the ISA is part of the name: each node builds and caches its own copy.
+    if isa:
+        name += '-%s' % (isa.upper())
     return name
 
 def check_for_engine_binary(out_path):

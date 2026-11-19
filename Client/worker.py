@@ -61,7 +61,7 @@ from client import try_forever
 
 ## Basic configuration of the Client. These timeouts can be changed at will
 
-CLIENT_VERSION   = 54 # Client version to send to the Server
+CLIENT_VERSION   = 55 # Client version to send to the Server
 TIMEOUT_HTTP     = 30 # Timeout in seconds for HTTP requests
 TIMEOUT_ERROR    = 60 # Timeout in seconds when any errors are thrown
 TIMEOUT_WORKLOAD = 60 # Timeout in seconds between workload requests
@@ -972,6 +972,18 @@ def server_configure_fastchess(config):
     payload = { 'username' : config.username, 'password' : config.password }
     data    = requests.post(target, data=payload, timeout=TIMEOUT_HTTP).json()
 
+    # Binaries from before the portable runner build were compiled with
+    # -march=native, so any node that did not build them can crash on them.
+    # Drop them once; the stamp stops the other nodes deleting a good build.
+    stamp = os.path.join(os.getcwd(), '.fastchess-portable')
+    if not os.path.isfile(stamp):
+        for stale in ['fastchess-ob', 'fastshatranj-ob',
+                      'fastchess-ob.exe', 'fastshatranj-ob.exe']:
+            if os.path.isfile(stale):
+                print ('> Removing %s, which was built for a specific CPU' % (stale))
+                os.remove(stale)
+        open(stamp, 'w').close()
+
     # Might already have sufficiently new binaries. Both are required, since a
     # worker from before shatranj support may only have fastchess-ob.
     print ('> Checking for existing fastchess-ob and fastshatranj-ob binaries')
@@ -1031,11 +1043,18 @@ def server_configure_fastchess(config):
 def build_fastchess_in_dir(config, runner_dir):
     print ('> Using C++ compiler %s...' % config.cxx_comp)
 
+    # The runners live in a possibly shared Client directory, so they may be
+    # started on a different machine than the one that built them. The upstream
+    # Makefile uses -march=native, which makes the binary die with SIGILL on any
+    # node with fewer instruction sets. Pin the baseline so one build runs on
+    # every machine. Fastchess is a referee, so the lost SIMD is irrelevant.
+    native = ['NATIVE=-march=x86-64'] if config.isa_name.startswith('x86-64') else []
+
     # Build both binaries from the one checkout. They have their own object
     # directories, so the two invocations do not interfere with each other.
     for target in ['', 'fastshatranj']:
 
-        make_cmd = ['make', '-j', 'CXX=%s' % config.cxx_comp]
+        make_cmd = ['make', '-j', 'CXX=%s' % config.cxx_comp] + native
         if target:
             make_cmd.append(target)
 
@@ -1244,7 +1263,7 @@ def safe_download_engine(config, branch, net_path):
     source      = config.workload['test'][branch]['source']
     private     = config.workload['test'][branch]['private']
 
-    bin_name = utils.engine_binary_name(engine, commit_sha, net_path)
+    bin_name = utils.engine_binary_name(engine, commit_sha, net_path, config.isa_name)
     out_path = os.path.join('Engines', bin_name)
 
     make_path = config.workload['test'][branch]['build']['path']
